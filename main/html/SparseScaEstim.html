@@ -1,0 +1,416 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SparseScaEstim</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-06-02"><meta name="DC.source" content="SparseScaEstim.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">classdef</span> SparseScaEstim &lt; handle
+    <span class="comment">% SparseScaEstim:  Scalar estimator class with sparsity</span>
+    <span class="comment">%</span>
+    <span class="comment">% Let baseEstim be the estimator for a base random variable X1.</span>
+    <span class="comment">% Then SparseScaEstim is the estimator for a new random variable:</span>
+    <span class="comment">%   X = X1 with prob p1</span>
+    <span class="comment">%     = x0 with prob 1-p1</span>
+    <span class="comment">% where x0 is a constant (default = 0)</span>
+    <span class="keyword">properties</span>
+        p1 = 0.5;           <span class="comment">% Sparsity rate</span>
+        estim1;             <span class="comment">% Base estimator when U=1</span>
+        x0 = 0;             <span class="comment">% Null value</span>
+        autoTune = false;   <span class="comment">% learning of parameters</span>
+        tuneDim = <span class="string">'joint'</span>;  <span class="comment">% Determine dimension to autoTune over, must be</span>
+                            <span class="comment">% 'joint', 'col', or 'row'</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">properties</span> (Hidden)
+        LogLikeFlag = false;    <span class="comment">% Indicates if estim1 has a loglikey method</span>
+        weightFlag = false;     <span class="comment">%Indicates if estim1 has a weightFlag property</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>
+        <span class="comment">% Constructor</span>
+        <span class="keyword">function</span> obj = SparseScaEstim(estim1, p1, x0, varargin)
+            <span class="keyword">if</span> nargin ~= 0 <span class="comment">% Allow nargin == 0 syntax</span>
+                obj.p1 = p1;
+                obj.estim1 = estim1;
+                <span class="keyword">if</span> (nargin &gt;= 3 &amp;&amp; ~isempty(x0))
+                    obj.x0 = x0;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            <span class="keyword">for</span> i = 1:2:length(varargin)
+                obj.(varargin{i}) = varargin{i+1};
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">% Set method for estim1</span>
+        <span class="keyword">function</span> set.estim1(obj, Estim1)
+            <span class="comment">% Check to ensure input Estim1 is a valid EstimIn class</span>
+            <span class="keyword">if</span> isa(Estim1, <span class="string">'EstimIn'</span>)
+                obj.LogLikeFlag = ismethod(Estim1, <span class="string">'loglikey'</span>); <span class="comment">%#ok&lt;MCSUP&gt;</span>
+                obj.weightFlag = ~isempty(findprop(Estim1, <span class="string">'mixWeight'</span>));
+                obj.estim1 = Estim1;
+            <span class="keyword">else</span>
+                error(<span class="string">'estim1 must be a valid EstimIn object'</span>)
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">% Compute prior mean and variance</span>
+        <span class="keyword">function</span> [xhat, xvar, valInit] = estimInit(obj)
+            [xhat1, xvar1, valInit1] = obj.estim1.estimInit;
+            xhat = obj.p1.*xhat1 + (1-obj.p1).*obj.x0;
+            xvar = obj.p1.*(abs(xhat1).^2 + xvar1) <span class="keyword">...</span>
+                + (1-obj.p1).*(abs(obj.x0).^2) - abs(xhat).^2;
+            valInit = obj.p1.*valInit1;
+        <span class="keyword">end</span>
+
+        <span class="comment">% Compute posterior mean and variance from Gaussian estimate</span>
+        <span class="keyword">function</span> [xhat, xvar, klDivNeg, py1] = estim(obj, rhat, rvar)
+
+            <span class="comment">% Compute the activity probabilities</span>
+            <span class="keyword">if</span> ~obj.LogLikeFlag
+                <span class="comment">% This EstimIn class does not implement the loglikey</span>
+                <span class="comment">% method, thus convert from probability domain to log-prob</span>
+                <span class="comment">% domain</span>
+
+                <span class="comment">% Get log-likelihood of rhat for U=1 and U=0</span>
+                loglike1 = log( obj.estim1.plikey(rhat, rvar) );
+
+            <span class="keyword">else</span>
+                <span class="comment">% This EstimIn class implements the loglikey method, thus</span>
+                <span class="comment">% work in the log-domain</span>
+
+                <span class="comment">% Get log-likelihood of rhat for U=1 and U=0</span>
+                loglike1 = obj.estim1.loglikey(rhat, rvar);
+            <span class="keyword">end</span>
+
+            <span class="comment">%Handle real and complex cases separately</span>
+            rvar(rvar &lt; eps) = eps;     <span class="comment">% for numerical stability...</span>
+            <span class="keyword">if</span> isreal(rhat)
+                loglike0 = -0.5*( log(2*pi) + log(rvar) + <span class="keyword">...</span>
+                    ((rhat - obj.x0).^2)./rvar );
+            <span class="keyword">else</span>
+                loglike0 = -( log(pi) + log(rvar) + <span class="keyword">...</span>
+                    (abs(rhat - obj.x0).^2)./rvar );
+            <span class="keyword">end</span>
+
+            <span class="comment">% Convert log-domain quantities into posterior activity</span>
+            <span class="comment">% probabilities (i.e., py1 = Pr{X=X1 | y}, py0 = Pr{X=x0 | y})</span>
+            exparg = loglike0 - loglike1 + log(1 - obj.p1) - log(obj.p1);
+            maxarg = 50;
+            exparg = max(min(exparg,maxarg),-maxarg); <span class="comment">% numerical robustness</span>
+            py1 = (1 + exp(exparg)).^(-1);
+            py0 = 1 - py1;
+
+            <span class="comment">%Update the sparsity rate parameter</span>
+            <span class="keyword">if</span> obj.autoTune
+                [N, T] = size(rhat);
+                <span class="comment">%Average over all elements, per column, or per row</span>
+                p1_old = obj.p1;
+                <span class="keyword">switch</span> obj.tuneDim
+                    <span class="keyword">case</span> <span class="string">'joint'</span>
+                        obj.p1 = sum(py1(:))/N/T;
+                    <span class="keyword">case</span> <span class="string">'col'</span>
+                        obj.p1 = repmat(sum(py1)/N,[N 1]);
+                    <span class="keyword">case</span> <span class="string">'row'</span>
+                        obj.p1 = repmat(sum(py1,2)/T, [1 T]);
+                    <span class="keyword">otherwise</span>
+                        error(<span class="string">'Invalid tuning dimension in SparseScaEstim'</span>);
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> obj.weightFlag
+                    set(obj.estim1, <span class="string">'mixWeight'</span>, py1./obj.p1)
+
+
+                <span class="comment">%Try keeping p1*var0 constant; assumes that estim1 has var0!</span>
+                <span class="keyword">if</span> 0
+                  set(obj.estim1, <span class="string">'var0'</span>, obj.estim1.var0.*p1_old./obj.p1)
+                  <span class="comment">%p1var0 = obj.p1*obj.estim1.var0</span>
+                <span class="keyword">end</span>
+
+                <span class="keyword">else</span>
+                    <span class="keyword">if</span> ~isempty(findprop(obj.estim1,<span class="string">'autoTune'</span>))
+                      <span class="keyword">if</span> obj.estim1.autoTune
+                        warning(strcat(<span class="string">'Auto tuning may fail: '</span>,<span class="keyword">...</span>
+                                class(obj.estim1),<span class="keyword">...</span>
+                                <span class="string">' does not include property mixWeight.'</span>))
+                      <span class="keyword">end</span>
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+
+            <span class="comment">% Compute mean and variance</span>
+            <span class="keyword">if</span> (nargout &gt;= 3)
+                [xhat1, xvar1, klDivNeg1] = obj.estim1.estim(rhat, rvar);
+            <span class="keyword">else</span>
+                [xhat1, xvar1] = obj.estim1.estim(rhat, rvar);
+            <span class="keyword">end</span>
+            xhat = py1.*xhat1 + py0.*obj.x0;
+            xvar = py1.*(abs(xhat1).^2 + xvar1) + py0.*(abs(obj.x0).^2)<span class="keyword">...</span>
+                - abs(xhat).^2;
+
+            <span class="comment">% Compute negative K-L divergence</span>
+            <span class="keyword">if</span> (nargout &gt;= 3)
+                klDivNeg = py1.*klDivNeg1 <span class="keyword">...</span>
+                    + py1.*log(max(1e-8,obj.p1)./max(py1,1e-8)) <span class="keyword">...</span>
+                    + py0.*log(max(1e-8,(1-obj.p1))./max(py0,1e-8));
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="comment">% Generate random samples</span>
+        <span class="keyword">function</span> x = genRand(obj, nx)
+            x1 = obj.estim1.genRand(nx);
+            p = rand(size(x1)) &lt; obj.p1;
+            x = x1.*p + (1-p).*obj.x0;
+        <span class="keyword">end</span>
+
+        <span class="comment">% Get the points in the distribution</span>
+        <span class="keyword">function</span> x0 = getPoints(obj)
+            x0 = [0; obj.estim1.getPoints()];
+        <span class="keyword">end</span>
+
+        <span class="comment">% Set sparsity level</span>
+        <span class="keyword">function</span> setSparseProb(obj, p1)
+            obj.p1 = p1;
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+classdef SparseScaEstim < handle
+    % SparseScaEstim:  Scalar estimator class with sparsity
+    %
+    % Let baseEstim be the estimator for a base random variable X1.
+    % Then SparseScaEstim is the estimator for a new random variable:
+    %   X = X1 with prob p1
+    %     = x0 with prob 1-p1
+    % where x0 is a constant (default = 0)
+    properties
+        p1 = 0.5;           % Sparsity rate
+        estim1;             % Base estimator when U=1
+        x0 = 0;             % Null value
+        autoTune = false;   % learning of parameters
+        tuneDim = 'joint';  % Determine dimension to autoTune over, must be 
+                            % 'joint', 'col', or 'row'
+    end
+    
+    properties (Hidden)
+        LogLikeFlag = false;    % Indicates if estim1 has a loglikey method
+        weightFlag = false;     %Indicates if estim1 has a weightFlag property
+    end
+    
+    methods
+        % Constructor
+        function obj = SparseScaEstim(estim1, p1, x0, varargin)
+            if nargin ~= 0 % Allow nargin == 0 syntax
+                obj.p1 = p1;
+                obj.estim1 = estim1;
+                if (nargin >= 3 && ~isempty(x0))
+                    obj.x0 = x0;
+                end
+            end
+            for i = 1:2:length(varargin)
+                obj.(varargin{i}) = varargin{i+1};
+            end
+        end
+        
+        % Set method for estim1
+        function set.estim1(obj, Estim1)
+            % Check to ensure input Estim1 is a valid EstimIn class
+            if isa(Estim1, 'EstimIn')
+                obj.LogLikeFlag = ismethod(Estim1, 'loglikey'); %#ok<MCSUP>
+                obj.weightFlag = ~isempty(findprop(Estim1, 'mixWeight'));
+                obj.estim1 = Estim1;
+            else
+                error('estim1 must be a valid EstimIn object')
+            end
+        end
+        
+        % Compute prior mean and variance
+        function [xhat, xvar, valInit] = estimInit(obj)
+            [xhat1, xvar1, valInit1] = obj.estim1.estimInit;
+            xhat = obj.p1.*xhat1 + (1-obj.p1).*obj.x0;
+            xvar = obj.p1.*(abs(xhat1).^2 + xvar1) ...
+                + (1-obj.p1).*(abs(obj.x0).^2) - abs(xhat).^2;
+            valInit = obj.p1.*valInit1;
+        end
+        
+        % Compute posterior mean and variance from Gaussian estimate
+        function [xhat, xvar, klDivNeg, py1] = estim(obj, rhat, rvar)
+            
+            % Compute the activity probabilities
+            if ~obj.LogLikeFlag
+                % This EstimIn class does not implement the loglikey
+                % method, thus convert from probability domain to log-prob
+                % domain
+                
+                % Get log-likelihood of rhat for U=1 and U=0
+                loglike1 = log( obj.estim1.plikey(rhat, rvar) );
+
+            else
+                % This EstimIn class implements the loglikey method, thus
+                % work in the log-domain
+                
+                % Get log-likelihood of rhat for U=1 and U=0
+                loglike1 = obj.estim1.loglikey(rhat, rvar);
+            end
+            
+            %Handle real and complex cases separately
+            rvar(rvar < eps) = eps;     % for numerical stability...
+            if isreal(rhat)
+                loglike0 = -0.5*( log(2*pi) + log(rvar) + ...
+                    ((rhat - obj.x0).^2)./rvar );
+            else
+                loglike0 = -( log(pi) + log(rvar) + ...
+                    (abs(rhat - obj.x0).^2)./rvar );
+            end
+            
+            % Convert log-domain quantities into posterior activity
+            % probabilities (i.e., py1 = Pr{X=X1 | y}, py0 = Pr{X=x0 | y})
+            exparg = loglike0 - loglike1 + log(1 - obj.p1) - log(obj.p1);
+            maxarg = 50; 
+            exparg = max(min(exparg,maxarg),-maxarg); % numerical robustness
+            py1 = (1 + exp(exparg)).^(-1);
+            py0 = 1 - py1;
+            
+            %Update the sparsity rate parameter
+            if obj.autoTune
+                [N, T] = size(rhat);
+                %Average over all elements, per column, or per row
+                p1_old = obj.p1;
+                switch obj.tuneDim
+                    case 'joint'
+                        obj.p1 = sum(py1(:))/N/T;
+                    case 'col'
+                        obj.p1 = repmat(sum(py1)/N,[N 1]);
+                    case 'row'
+                        obj.p1 = repmat(sum(py1,2)/T, [1 T]);
+                    otherwise 
+                        error('Invalid tuning dimension in SparseScaEstim');
+                end
+                if obj.weightFlag
+                    set(obj.estim1, 'mixWeight', py1./obj.p1)
+
+
+                %Try keeping p1*var0 constant; assumes that estim1 has var0!
+                if 0
+                  set(obj.estim1, 'var0', obj.estim1.var0.*p1_old./obj.p1) 
+                  %p1var0 = obj.p1*obj.estim1.var0 
+                end
+
+                else
+                    if ~isempty(findprop(obj.estim1,'autoTune'))
+                      if obj.estim1.autoTune
+                        warning(strcat('Auto tuning may fail: ',...
+                                class(obj.estim1),...
+                                ' does not include property mixWeight.'))
+                      end 
+                    end
+                end
+            end  
+            
+            % Compute mean and variance
+            if (nargout >= 3)
+                [xhat1, xvar1, klDivNeg1] = obj.estim1.estim(rhat, rvar);
+            else
+                [xhat1, xvar1] = obj.estim1.estim(rhat, rvar);
+            end
+            xhat = py1.*xhat1 + py0.*obj.x0;
+            xvar = py1.*(abs(xhat1).^2 + xvar1) + py0.*(abs(obj.x0).^2)...
+                - abs(xhat).^2;
+            
+            % Compute negative K-L divergence
+            if (nargout >= 3)
+                klDivNeg = py1.*klDivNeg1 ...
+                    + py1.*log(max(1e-8,obj.p1)./max(py1,1e-8)) ...
+                    + py0.*log(max(1e-8,(1-obj.p1))./max(py0,1e-8));
+            end
+            
+        end
+        
+        % Generate random samples
+        function x = genRand(obj, nx)
+            x1 = obj.estim1.genRand(nx);
+            p = rand(size(x1)) < obj.p1;
+            x = x1.*p + (1-p).*obj.x0;
+        end
+        
+        % Get the points in the distribution
+        function x0 = getPoints(obj)
+            x0 = [0; obj.estim1.getPoints()];
+        end
+        
+        % Set sparsity level
+        function setSparseProb(obj, p1)
+            obj.p1 = p1;
+        end
+        
+    end
+    
+end
+
+
+##### SOURCE END #####
+--></body></html>

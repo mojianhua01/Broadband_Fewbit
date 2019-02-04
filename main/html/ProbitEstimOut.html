@@ -1,0 +1,800 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>ProbitEstimOut</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-05-29"><meta name="DC.source" content="ProbitEstimOut.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">% CLASS: ProbitEstimOut</span>
+<span class="comment">%</span>
+<span class="comment">% HIERARCHY (Enumeration of the various super- and subclasses)</span>
+<span class="comment">%   Superclasses: EstimOut</span>
+<span class="comment">%   Subclasses: N/A</span>
+<span class="comment">%</span>
+<span class="comment">% TYPE (Abstract or Concrete)</span>
+<span class="comment">%   Concrete</span>
+<span class="comment">%</span>
+<span class="comment">% DESCRIPTION (High-level overview of the class)</span>
+<span class="comment">%   The ProbitEstimOut class defines a scalar observation channel, p(y|z),</span>
+<span class="comment">%   that constitutes a probit binary classification model, i.e., y is an</span>
+<span class="comment">%   element of the set {0,1}, z is a real number, and</span>
+<span class="comment">%             	 p(y = 1 | z) = Phi((z - Mean)/sqrt(Var)),</span>
+<span class="comment">%   where Phi((x-b)/sqrt(c)) is the cumulative density function (CDF) of a</span>
+<span class="comment">%   Gaussian random variable with mean b, variance c, and argument x.</span>
+<span class="comment">%   Typically, mean = 0 and var = 1, thus p(y = 1 | z) = Phi(z).</span>
+<span class="comment">%</span>
+<span class="comment">% PROPERTIES (State variables)</span>
+<span class="comment">%   Y           An M-by-T array of binary ({0,1}) class labels for the</span>
+<span class="comment">%               training data, where M is the number of training data</span>
+<span class="comment">%               points, and T is the number of classifiers being learned</span>
+<span class="comment">%               (typically T = 1)</span>
+<span class="comment">%   Mean        [Optional] An M-by-T array of probit function means (see</span>
+<span class="comment">%               DESCRIPTION) [Default: 0]</span>
+<span class="comment">%   Var         [Optional] An M-by-T array of probit function variances</span>
+<span class="comment">%               (see DESCRIPTION).  Note that smaller variances equate to</span>
+<span class="comment">%               more step-like sigmoid functions [Default: 1e-2]</span>
+<span class="comment">%   maxSumVal 	Perform MMSE estimation (false) or MAP estimation (true)?</span>
+<span class="comment">%               [Default: false]</span>
+<span class="comment">%</span>
+<span class="comment">% METHODS (Subroutines/functions)</span>
+<span class="comment">%   ProbitEstimOut(Y)</span>
+<span class="comment">%       - Default constructor.  Assigns Mean and Var to default values.</span>
+<span class="comment">%   ProbitEstimOut(Y, Mean)</span>
+<span class="comment">%       - Optional constructor.  Sets both Y and Mean.</span>
+<span class="comment">%   ProbitEstimOut(Y, Mean, Var)</span>
+<span class="comment">%       - Optional constructor.  Sets Y, Mean, and Var.</span>
+<span class="comment">%   ProbitEstimOut(Y, Mean, Var, maxSumVal)</span>
+<span class="comment">%       - Optional constructor.  Sets Y, Mean, Var, and maxSumVal.</span>
+<span class="comment">%   estim(obj, zhat, zvar)</span>
+<span class="comment">%       - Provides the posterior mean and variance of a variable z when</span>
+<span class="comment">%         p(y|z) is the probit model and maxSumVal = false (see</span>
+<span class="comment">%         DESCRIPTION), and p(z) = Normal(zhat,zvar).  When maxSumVal =</span>
+<span class="comment">%         true, estim returns MAP estimates of each element of z, as well</span>
+<span class="comment">%         as the second derivative of log p(y|z).</span>
+<span class="comment">%</span>
+
+<span class="comment">%</span>
+<span class="comment">% Coded by: Justin Ziniel, The Ohio State Univ.</span>
+<span class="comment">% E-mail: zinielj@ece.osu.edu</span>
+<span class="comment">% Last change: 08/27/12</span>
+<span class="comment">% Change summary:</span>
+<span class="comment">%       - Created (05/20/12; JAZ)</span>
+<span class="comment">%       - Modified estim method to compute quantities using erfcx function</span>
+<span class="comment">%         (v0.2) (07/10/12; JAZ)</span>
+<span class="comment">%       - Added maxSumVal property to distinguish between MMSE and MAP</span>
+<span class="comment">%         computations (08/27/12; JAZ)</span>
+<span class="comment">% Version 0.2</span>
+<span class="comment">%</span>
+
+<span class="keyword">classdef</span> ProbitEstimOut &lt; EstimOut
+
+    <span class="keyword">properties</span>
+        Y;              <span class="comment">% M-by-T vector of binary class labels</span>
+        Mean = 0;       <span class="comment">% M-by-T vector of probit function means [dflt: 0]</span>
+        Var = 1e-2;    	<span class="comment">% M-by-T vector of probit function variances [dflt: 1e-2]</span>
+        maxSumVal = false;   <span class="comment">% Sum-product (false) or max-sum (true) GAMP?</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">%                      CONSTRUCTOR METHOD</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="keyword">function</span> obj = ProbitEstimOut(Y, Mean, Var, maxsumval)
+            obj = obj@EstimOut;
+            <span class="keyword">if</span> nargin ~= 0 <span class="comment">% Allow nargin == 0 syntax</span>
+                obj.Y = Y;      <span class="comment">% Set Y</span>
+                <span class="keyword">if</span> nargin &gt;= 2 &amp;&amp; ~isempty(Mean)
+                    <span class="comment">% Mean property is an argument</span>
+                    obj.Mean = Mean;
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> nargin &gt;= 3 &amp;&amp; ~isempty(Var)
+                    <span class="comment">% Var property is an argument</span>
+                    obj.Var = Var;
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> nargin &gt;= 4 &amp;&amp; ~isempty(maxsumval)
+                    <span class="comment">% maxSumVal property is an argument</span>
+                    obj.maxSumVal = maxsumval;
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> any(Var(:) &lt; 0) &amp;&amp; ~obj.maxSumVal
+                    error(<span class="string">'Var must be non-negative when running sum-product GAMP'</span>)
+                <span class="keyword">elseif</span> any(Var(:) &lt;= 0) &amp;&amp; obj.maxSumVal
+                    error(<span class="string">'Var must be strictly positive when running max-sum GAMP'</span>)
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">%                           SET METHODS</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="keyword">function</span> obj = set.Y(obj, Y)
+            <span class="keyword">if</span> ~all((Y(:) == -1) | (Y(:) == 0) | (Y(:) == 1))
+                warning([<span class="string">'Elements of Y must be either in {0,1}'</span> <span class="keyword">...</span>
+                    <span class="string">' or {-1,1}.  If you pass the true Z, then only use'</span> <span class="keyword">...</span>
+                    <span class="string">' the genRand function or errors will occur.'</span>]);
+            <span class="keyword">elseif</span> any(Y(:) == -1)
+                Y(Y == -1) = 0;
+            <span class="keyword">end</span>
+            obj.Y = Y;
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> obj = set.Mean(obj, Mean)
+                obj.Mean = double(Mean);
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> obj = set.Var(obj, Var)
+            <span class="keyword">if</span> any(Var(:) &lt; 0)
+                error(<span class="string">'Var must be non-negative'</span>)
+            <span class="keyword">else</span>
+                obj.Var = double(Var);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> obj = set.maxSumVal(obj, maxsumval)
+            <span class="keyword">if</span> isscalar(maxsumval) &amp;&amp; islogical(maxsumval)
+                obj.maxSumVal = maxsumval;
+            <span class="keyword">else</span>
+                error(<span class="string">'ProbitEstimOut: maxSumVal must be a logical scalar'</span>)
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">%                          ESTIM METHOD</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">% This function will compute the posterior mean and variance of a</span>
+        <span class="comment">% random vector Z whose prior distribution is N(Phat, Pvar), given</span>
+        <span class="comment">% observations Y obtained through the separable channel model:</span>
+        <span class="comment">% p(Y(m,t) = 1 | Z(m,t)) = Phi((Z(m,t) - Mean(m,t))/sqrt(Var(m,t)))</span>
+        <span class="comment">% if obj.maxSumVal = false, otherwise it will return Zhat = argmax</span>
+        <span class="comment">% log p(y|z) - 1/2/Pvar (z - Phat)^2 and the second derivative of</span>
+        <span class="comment">% log p(y|z) evaluated at Zhat in Zvar, if obj.maxSumVal = true</span>
+        <span class="keyword">function</span> [Zhat, Zvar] = estim(obj, Phat, Pvar)
+            <span class="keyword">switch</span> obj.maxSumVal
+                <span class="keyword">case</span> false
+                    <span class="comment">% Return sum-product expressions to GAMP in Zhat and</span>
+                    <span class="comment">% Zvar</span>
+
+                    <span class="comment">% Start by computing the critical constant, C, on which</span>
+                    <span class="comment">% the remainder of the computations depend.  Modulate</span>
+                    <span class="comment">% this constant by -1 for cases where Y(m) = 0.</span>
+                    PMonesY = sign(obj.Y - 0.1);	<span class="comment">% +/- 1 for Y(m,t)'s</span>
+                    C = PMonesY .* ((Phat - obj.Mean) ./ <span class="keyword">...</span>
+                        sqrt(Pvar + obj.Var));
+
+                    <span class="keyword">if</span> isreal(C) ==false
+                        keyboard;
+                    <span class="keyword">end</span>;
+
+                    <span class="comment">% Now compute the ratio normpdf(C)/normcdf(C)</span>
+                    ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+
+                    <span class="comment">% Finally, compute E[Z(m,t) | Y(m,t)] = Zhat, and</span>
+                    <span class="comment">% var{Z(m,t) | Y(m,t)} = Zvar</span>
+                    Zhat = Phat + PMonesY .* <span class="keyword">...</span>
+                        ((Pvar ./ sqrt(Pvar + obj.Var)) .* ratio);
+                    Zvar = Pvar - ((Pvar.^2 ./ (Pvar + obj.Var)) .* <span class="keyword">...</span>
+                        ratio) .* (C + ratio);
+
+                <span class="keyword">case</span> true
+                    <span class="comment">% Return max-sum expressions to GAMP in Zhat and Zvar</span>
+                    PMonesY = sign(obj.Y - 0.1);	<span class="comment">% +/- 1 for Y(m,t)'s</span>
+
+                    <span class="comment">% Determine the expansion point about which to perform</span>
+                    <span class="comment">% the Taylor series approximation</span>
+                    EP = (sign(PMonesY) == sign(Phat)) .* Phat;
+
+<span class="comment">%                     % First compute a second-order Taylor series</span>
+<span class="comment">%                     % approximation of log p(y|z) - 1/2/Pvar (z - Phat)^2,</span>
+<span class="comment">%                     % about the point EP, and set as Zhat the maximizer</span>
+<span class="comment">%                     % of this approximation</span>
+<span class="comment">%                     C = PMonesY .* (EP - obj.Mean) ./ sqrt(obj.Var);</span>
+<span class="comment">%                     % Now compute the ratio normpdf(C)/normcdf(C)</span>
+<span class="comment">%                     ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));</span>
+<span class="comment">%                     % Compute 1st deriv of maximization functional</span>
+<span class="comment">%                     Deriv1 = (PMonesY ./ sqrt(obj.Var)) .* ratio - ...</span>
+<span class="comment">%                         (1./Pvar) .* (EP - Phat);</span>
+<span class="comment">%                     % Compute 2nd deriv of maximization functional</span>
+<span class="comment">%                     Deriv2 = -(1./obj.Var) .* ratio .* (C + ratio) - ...</span>
+<span class="comment">%                         (1 ./ Pvar);</span>
+<span class="comment">%                     % Set maximizer of Taylor approximation as Zhat</span>
+<span class="comment">%                     Zhat = Phat - Deriv1 ./ Deriv2;</span>
+
+                    <span class="comment">% Manually locate the value of z that sets the cost</span>
+                    <span class="comment">% function derivative to zero using fsolve</span>
+                    opts = optimset(<span class="string">'Jacobian'</span>, <span class="string">'on'</span>, <span class="string">'MaxIter'</span>, 25, <span class="keyword">...</span>
+                        <span class="string">'Display'</span>, <span class="string">'off'</span>);
+                    F = @(z) zero_deriv(obj, z, Phat, Pvar);
+                    Zhat = fsolve(F, EP, opts);
+
+                    <span class="comment">% Now compute second derivative of log p(y|z) evaluated</span>
+                    <span class="comment">% at Zhat (Note: Not an approximation)</span>
+                    <span class="comment">% Start by computing frequently appearing constant</span>
+                    C = PMonesY .* (Zhat - obj.Mean) ./ sqrt(obj.Var);
+                    <span class="comment">% Now compute the ratio normpdf(C)/normcdf(C)</span>
+                    ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+                    <span class="comment">% Compute 2nd deriv of log p(y|z)</span>
+                    Deriv = -(1./obj.Var) .* ratio .* (C + ratio);
+<span class="comment">%                     Deriv = max(1e-6, Deriv);</span>
+
+                    <span class="comment">% Output in Zvar a function of the 2nd derivative that,</span>
+                    <span class="comment">% once manipulated by gampEst, yields the desired</span>
+                    <span class="comment">% max-sum expression for -g'_{out}</span>
+                    Zvar = Pvar ./ (1 - Pvar.*Deriv);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">%                         LOGLIKE METHOD</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">% This function will compute *an approximation* to the expected</span>
+        <span class="comment">% log-likelihood, E_z[log p(y|z)] when performing sum-product GAMP</span>
+        <span class="comment">% (obj.maxSumVal = false).  The approximation is based on Jensen's</span>
+        <span class="comment">% inequality, i.e., computing log E_z[p(y|z)] instead.  If</span>
+        <span class="comment">% performing max-sum GAMP (obj.maxSumVal = true), logLike returns</span>
+        <span class="comment">% log p(y|z) evaluated at z = Zhat</span>
+        <span class="keyword">function</span> ll = logLike(obj, Zhat, Zvar)
+            PMonesY = sign(obj.Y - 0.1);	<span class="comment">% +/- 1 for Y(m,t)'s</span>
+            <span class="keyword">switch</span> obj.maxSumVal
+                <span class="keyword">case</span> false
+                    <span class="comment">% Start by computing the critical constant, C, on which</span>
+                    <span class="comment">% the remainder of the computations depend.  Modulate</span>
+                    <span class="comment">% this constant by -1 for cases where Y(m,t) = 0.</span>
+                    C = PMonesY .* ((Zhat - obj.Mean) ./ sqrt(Zvar + obj.Var));
+                    CDF = normcdf(C,0,1);
+                    ll = log(CDF);
+                    <span class="comment">%Find bad values that cause log cdf to go to infinity</span>
+                    I = find(C &lt; -30);
+                    <span class="comment">%This expression is equivalent to log(normpdf(C)) for</span>
+                    <span class="comment">%all negative arguments greater than -38 and is</span>
+                    <span class="comment">%numerically robust for all values smaller.  DO NOT USE</span>
+                    <span class="comment">%FOR LARGE positive x.</span>
+                    ll(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+                <span class="keyword">case</span> true
+                    <span class="comment">%Compute true constant</span>
+                    C = PMonesY .* (Zhat - obj.Mean)/sqrt(obj.Var);
+                    ll = log(normcdf(C, 0, 1));
+                    <span class="comment">%Find bad values that cause log cdf to go to infinity</span>
+                    I = find(C &lt; -30);
+                    <span class="comment">%This expression is equivalent to log(normpdf(C)) for</span>
+                    <span class="comment">%all negative arguments greater than -38 and is</span>
+                    <span class="comment">%numerically robust for all values smaller.  DO NOT USE</span>
+                    <span class="comment">%FOR LARGE positive x.</span>
+                    ll(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">% Compute output cost:</span>
+        <span class="comment">% For sum-product compute</span>
+        <span class="comment">%   (Axhat-phatfix)^2/(2*pvar) + log int_z p_{Y|Z}(y|z) N(z;phatfix, pvar)</span>
+        <span class="comment">%   with phatfix such that Axhat=estim(phatfix,pvar).</span>
+        <span class="comment">% For max-sum GAMP, compute</span>
+        <span class="comment">%   log p_{Y|Z}(y|z) @ z = Axhat</span>
+        <span class="keyword">function</span> ll = logScale(obj,Axhat,pvar,phat)
+
+<span class="comment">%           error('logScale method not implemented for this class. Set the GAMP option adaptStepBethe = false.');</span>
+
+            <span class="comment">%Find sign needed to compute the inner factor</span>
+            PMonesY = sign(obj.Y - 0.1);	<span class="comment">% +/- 1 for Y(m,t)'s</span>
+
+            <span class="keyword">if</span>~(obj.maxSumVal)
+                <span class="comment">% Find the fixed-point of phat</span>
+                opt.phat0 = Axhat;
+                opt.alg = 1; <span class="comment">% approximate newton's method</span>
+                opt.maxIter = 40;
+                opt.tol = 1e-4;
+                opt.stepsize = 0.2;
+                <span class="comment">%Smallest regularization setting without getting the warnings for Var= 0</span>
+                opt.regularization = 1e-6;
+                opt.debug = false;
+                phatfix = estimInvert(obj,Axhat,pvar,opt);
+
+                C = PMonesY .* ((phatfix - obj.Mean) ./ sqrt(pvar + obj.Var));
+                <span class="comment">% Compute log int_z p_{Y|Z}(y|z) N(z;phatfix, pvar)</span>
+                <span class="comment">% Has a closed form solution: see C. E. Rasmussen,</span>
+                <span class="comment">% "Gaussian Processes for Machine Learning." sec 3.9.</span>
+                ls = log(normcdf(C, 0 , 1));
+                <span class="comment">%Find bad values that cause log cdf to go to infinity</span>
+                I = find(C &lt; -30);
+                <span class="comment">%This expression is equivalent to log(normpdf(C)) for</span>
+                <span class="comment">%all negative arguments greater than -38 and is</span>
+                <span class="comment">%numerically robust for all values smaller.  DO NOT USE</span>
+                <span class="comment">%FOR LARGE positive x.</span>
+                ls(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+
+                <span class="comment">% Combine to form output cost</span>
+                ll = ls + 0.5*(Axhat - phatfix).^2./pvar;
+            <span class="keyword">else</span>
+                <span class="comment">%Compute true constant</span>
+                C = PMonesY .* (Axhat - obj.Mean)/sqrt(obj.Var);
+                ll = log(normcdf(C, 0, 1));
+                <span class="comment">%Find bad values that cause log cdf to go to infinity</span>
+                I = find(C &lt; -30);
+                <span class="comment">%This expression is equivalent to log(normpdf(C)) for</span>
+                <span class="comment">%all negative arguments greater than -38 and is</span>
+                <span class="comment">%numerically robust for all values smaller.  DO NOT USE</span>
+                <span class="comment">%FOR LARGE positive x.</span>
+                ll(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">%                       NUMCOLUMNS METHOD</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="keyword">function</span> S = numColumns(obj)
+            <span class="comment">% Return number of columns of Y</span>
+            S = size(obj.Y, 2);
+        <span class="keyword">end</span>
+
+        <span class="comment">%Generate random samples given the distribution</span>
+        <span class="keyword">function</span> y = genRand(obj, z)
+            <span class="keyword">if</span> obj.Var &gt; 0
+                actProb = normcdf(z,obj.Mean, sqrt(obj.Var));
+                y = (rand(size(z)) &lt; actProb);
+            <span class="keyword">elseif</span> obj.Var == 0
+                y = sign(z-obj.Mean);
+                y(y == -1) = 0;
+            <span class="keyword">else</span>
+                error(<span class="string">'Var must be non-negative'</span>)
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span> (Access = private)
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">%                         FSOLVE METHOD</span>
+        <span class="comment">% *****************************************************************</span>
+        <span class="comment">% This method is used by MATLAB's fsolve function in the max-sum</span>
+        <span class="comment">% case to locate the value of z that sets the prox-operator</span>
+        <span class="comment">% derivative to zero</span>
+        <span class="keyword">function</span> [Fval, Jacobian] = zero_deriv(obj, z, phat, pvar)
+            <span class="comment">% Compute value of derivative at z</span>
+            PMonesY = sign(obj.Y - 0.1);	<span class="comment">% +/- 1 for Y(m,t)'s</span>
+            C = PMonesY .* (z - obj.Mean) ./ sqrt(obj.Var);
+            <span class="comment">% Now compute the ratio normpdf(C)/normcdf(C)</span>
+            ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+            <span class="comment">% Value of derivative</span>
+            Fval = PMonesY.*ratio./sqrt(obj.Var) - (z - phat)./pvar;
+
+            <span class="comment">% Optionally compute Jacobian of F at z</span>
+            <span class="keyword">if</span> nargout &gt;= 2
+                M = numel(phat);
+                Jvec = -(1./obj.Var) .* ratio .* (C + ratio) - (1 ./ pvar);
+<span class="comment">%                 Jacobian = diag(Jvec);      % Okay for small problems</span>
+                Jacobian = sparse(1:M, 1:M, Jvec);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% CLASS: ProbitEstimOut
+% 
+% HIERARCHY (Enumeration of the various super- and subclasses)
+%   Superclasses: EstimOut
+%   Subclasses: N/A
+% 
+% TYPE (Abstract or Concrete)
+%   Concrete
+%
+% DESCRIPTION (High-level overview of the class)
+%   The ProbitEstimOut class defines a scalar observation channel, p(y|z),
+%   that constitutes a probit binary classification model, i.e., y is an
+%   element of the set {0,1}, z is a real number, and
+%             	 p(y = 1 | z) = Phi((z - Mean)/sqrt(Var)),
+%   where Phi((x-b)/sqrt(c)) is the cumulative density function (CDF) of a
+%   Gaussian random variable with mean b, variance c, and argument x.
+%   Typically, mean = 0 and var = 1, thus p(y = 1 | z) = Phi(z).
+%
+% PROPERTIES (State variables)
+%   Y           An M-by-T array of binary ({0,1}) class labels for the
+%               training data, where M is the number of training data
+%               points, and T is the number of classifiers being learned
+%               (typically T = 1)
+%   Mean        [Optional] An M-by-T array of probit function means (see
+%               DESCRIPTION) [Default: 0]
+%   Var         [Optional] An M-by-T array of probit function variances
+%               (see DESCRIPTION).  Note that smaller variances equate to
+%               more step-like sigmoid functions [Default: 1e-2]
+%   maxSumVal 	Perform MMSE estimation (false) or MAP estimation (true)?
+%               [Default: false]
+%
+% METHODS (Subroutines/functions)
+%   ProbitEstimOut(Y)
+%       - Default constructor.  Assigns Mean and Var to default values.
+%   ProbitEstimOut(Y, Mean)
+%       - Optional constructor.  Sets both Y and Mean.
+%   ProbitEstimOut(Y, Mean, Var)
+%       - Optional constructor.  Sets Y, Mean, and Var.
+%   ProbitEstimOut(Y, Mean, Var, maxSumVal)
+%       - Optional constructor.  Sets Y, Mean, Var, and maxSumVal.
+%   estim(obj, zhat, zvar)
+%       - Provides the posterior mean and variance of a variable z when
+%         p(y|z) is the probit model and maxSumVal = false (see 
+%         DESCRIPTION), and p(z) = Normal(zhat,zvar).  When maxSumVal =
+%         true, estim returns MAP estimates of each element of z, as well
+%         as the second derivative of log p(y|z).
+%
+
+%
+% Coded by: Justin Ziniel, The Ohio State Univ.
+% E-mail: zinielj@ece.osu.edu
+% Last change: 08/27/12
+% Change summary: 
+%       - Created (05/20/12; JAZ)
+%       - Modified estim method to compute quantities using erfcx function
+%         (v0.2) (07/10/12; JAZ)
+%       - Added maxSumVal property to distinguish between MMSE and MAP
+%         computations (08/27/12; JAZ)
+% Version 0.2
+%
+
+classdef ProbitEstimOut < EstimOut
+    
+    properties
+        Y;              % M-by-T vector of binary class labels
+        Mean = 0;       % M-by-T vector of probit function means [dflt: 0]
+        Var = 1e-2;    	% M-by-T vector of probit function variances [dflt: 1e-2]
+        maxSumVal = false;   % Sum-product (false) or max-sum (true) GAMP?
+    end
+    
+    methods
+        % *****************************************************************
+        %                      CONSTRUCTOR METHOD
+        % *****************************************************************
+        function obj = ProbitEstimOut(Y, Mean, Var, maxsumval)
+            obj = obj@EstimOut;
+            if nargin ~= 0 % Allow nargin == 0 syntax
+                obj.Y = Y;      % Set Y
+                if nargin >= 2 && ~isempty(Mean)
+                    % Mean property is an argument
+                    obj.Mean = Mean;
+                end
+                if nargin >= 3 && ~isempty(Var)
+                    % Var property is an argument
+                    obj.Var = Var;
+                end
+                if nargin >= 4 && ~isempty(maxsumval)
+                    % maxSumVal property is an argument
+                    obj.maxSumVal = maxsumval;
+                end
+                if any(Var(:) < 0) && ~obj.maxSumVal
+                    error('Var must be non-negative when running sum-product GAMP')
+                elseif any(Var(:) <= 0) && obj.maxSumVal
+                    error('Var must be strictly positive when running max-sum GAMP')
+                end
+            end
+        end
+        
+        
+        % *****************************************************************
+        %                           SET METHODS
+        % *****************************************************************
+        function obj = set.Y(obj, Y)
+            if ~all((Y(:) == -1) | (Y(:) == 0) | (Y(:) == 1))
+                warning(['Elements of Y must be either in {0,1}' ...
+                    ' or {-1,1}.  If you pass the true Z, then only use' ...
+                    ' the genRand function or errors will occur.']);
+            elseif any(Y(:) == -1)
+                Y(Y == -1) = 0;
+            end
+            obj.Y = Y;
+        end
+        
+        function obj = set.Mean(obj, Mean)
+                obj.Mean = double(Mean);
+        end
+        
+        function obj = set.Var(obj, Var)
+            if any(Var(:) < 0)
+                error('Var must be non-negative')
+            else
+                obj.Var = double(Var);
+            end
+        end
+        
+        function obj = set.maxSumVal(obj, maxsumval)
+            if isscalar(maxsumval) && islogical(maxsumval)
+                obj.maxSumVal = maxsumval;
+            else
+                error('ProbitEstimOut: maxSumVal must be a logical scalar')
+            end
+        end
+        
+        
+        % *****************************************************************
+        %                          ESTIM METHOD
+        % *****************************************************************
+        % This function will compute the posterior mean and variance of a
+        % random vector Z whose prior distribution is N(Phat, Pvar), given
+        % observations Y obtained through the separable channel model:
+        % p(Y(m,t) = 1 | Z(m,t)) = Phi((Z(m,t) - Mean(m,t))/sqrt(Var(m,t)))
+        % if obj.maxSumVal = false, otherwise it will return Zhat = argmax
+        % log p(y|z) - 1/2/Pvar (z - Phat)^2 and the second derivative of
+        % log p(y|z) evaluated at Zhat in Zvar, if obj.maxSumVal = true
+        function [Zhat, Zvar] = estim(obj, Phat, Pvar)
+            switch obj.maxSumVal
+                case false
+                    % Return sum-product expressions to GAMP in Zhat and
+                    % Zvar
+                    
+                    % Start by computing the critical constant, C, on which
+                    % the remainder of the computations depend.  Modulate 
+                    % this constant by -1 for cases where Y(m) = 0.
+                    PMonesY = sign(obj.Y - 0.1);	% +/- 1 for Y(m,t)'s
+                    C = PMonesY .* ((Phat - obj.Mean) ./ ...
+                        sqrt(Pvar + obj.Var));
+                    
+                    if isreal(C) ==false
+                        keyboard;
+                    end;
+                    
+                    % Now compute the ratio normpdf(C)/normcdf(C)
+                    ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+                    
+                    % Finally, compute E[Z(m,t) | Y(m,t)] = Zhat, and
+                    % var{Z(m,t) | Y(m,t)} = Zvar
+                    Zhat = Phat + PMonesY .* ...
+                        ((Pvar ./ sqrt(Pvar + obj.Var)) .* ratio);
+                    Zvar = Pvar - ((Pvar.^2 ./ (Pvar + obj.Var)) .* ...
+                        ratio) .* (C + ratio);
+                    
+                case true
+                    % Return max-sum expressions to GAMP in Zhat and Zvar
+                    PMonesY = sign(obj.Y - 0.1);	% +/- 1 for Y(m,t)'s
+                    
+                    % Determine the expansion point about which to perform
+                    % the Taylor series approximation
+                    EP = (sign(PMonesY) == sign(Phat)) .* Phat;
+                    
+%                     % First compute a second-order Taylor series
+%                     % approximation of log p(y|z) - 1/2/Pvar (z - Phat)^2,
+%                     % about the point EP, and set as Zhat the maximizer 
+%                     % of this approximation
+%                     C = PMonesY .* (EP - obj.Mean) ./ sqrt(obj.Var);
+%                     % Now compute the ratio normpdf(C)/normcdf(C)
+%                     ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+%                     % Compute 1st deriv of maximization functional
+%                     Deriv1 = (PMonesY ./ sqrt(obj.Var)) .* ratio - ...
+%                         (1./Pvar) .* (EP - Phat);
+%                     % Compute 2nd deriv of maximization functional
+%                     Deriv2 = -(1./obj.Var) .* ratio .* (C + ratio) - ...
+%                         (1 ./ Pvar);
+%                     % Set maximizer of Taylor approximation as Zhat
+%                     Zhat = Phat - Deriv1 ./ Deriv2;
+
+                    % Manually locate the value of z that sets the cost
+                    % function derivative to zero using fsolve
+                    opts = optimset('Jacobian', 'on', 'MaxIter', 25, ...
+                        'Display', 'off');
+                    F = @(z) zero_deriv(obj, z, Phat, Pvar);
+                    Zhat = fsolve(F, EP, opts);
+                    
+                    % Now compute second derivative of log p(y|z) evaluated
+                    % at Zhat (Note: Not an approximation)
+                    % Start by computing frequently appearing constant
+                    C = PMonesY .* (Zhat - obj.Mean) ./ sqrt(obj.Var);
+                    % Now compute the ratio normpdf(C)/normcdf(C)
+                    ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+                    % Compute 2nd deriv of log p(y|z)
+                    Deriv = -(1./obj.Var) .* ratio .* (C + ratio);
+%                     Deriv = max(1e-6, Deriv);
+                    
+                    % Output in Zvar a function of the 2nd derivative that,
+                    % once manipulated by gampEst, yields the desired
+                    % max-sum expression for -g'_{out}
+                    Zvar = Pvar ./ (1 - Pvar.*Deriv);
+            end
+        end
+        
+        
+        % *****************************************************************
+        %                         LOGLIKE METHOD
+        % *****************************************************************
+        % This function will compute *an approximation* to the expected
+        % log-likelihood, E_z[log p(y|z)] when performing sum-product GAMP
+        % (obj.maxSumVal = false).  The approximation is based on Jensen's 
+        % inequality, i.e., computing log E_z[p(y|z)] instead.  If
+        % performing max-sum GAMP (obj.maxSumVal = true), logLike returns
+        % log p(y|z) evaluated at z = Zhat
+        function ll = logLike(obj, Zhat, Zvar)
+            PMonesY = sign(obj.Y - 0.1);	% +/- 1 for Y(m,t)'s
+            switch obj.maxSumVal
+                case false
+                    % Start by computing the critical constant, C, on which
+                    % the remainder of the computations depend.  Modulate 
+                    % this constant by -1 for cases where Y(m,t) = 0.
+                    C = PMonesY .* ((Zhat - obj.Mean) ./ sqrt(Zvar + obj.Var));
+                    CDF = normcdf(C,0,1);
+                    ll = log(CDF);
+                    %Find bad values that cause log cdf to go to infinity
+                    I = find(C < -30);
+                    %This expression is equivalent to log(normpdf(C)) for
+                    %all negative arguments greater than -38 and is
+                    %numerically robust for all values smaller.  DO NOT USE
+                    %FOR LARGE positive x.
+                    ll(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+                case true
+                    %Compute true constant
+                    C = PMonesY .* (Zhat - obj.Mean)/sqrt(obj.Var);
+                    ll = log(normcdf(C, 0, 1));
+                    %Find bad values that cause log cdf to go to infinity
+                    I = find(C < -30);
+                    %This expression is equivalent to log(normpdf(C)) for
+                    %all negative arguments greater than -38 and is
+                    %numerically robust for all values smaller.  DO NOT USE
+                    %FOR LARGE positive x.
+                    ll(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+            end
+        end
+        
+        % Compute output cost:
+        % For sum-product compute
+        %   (Axhat-phatfix)^2/(2*pvar) + log int_z p_{Y|Z}(y|z) N(z;phatfix, pvar) 
+        %   with phatfix such that Axhat=estim(phatfix,pvar).
+        % For max-sum GAMP, compute
+        %   log p_{Y|Z}(y|z) @ z = Axhat
+        function ll = logScale(obj,Axhat,pvar,phat)
+                   
+%           error('logScale method not implemented for this class. Set the GAMP option adaptStepBethe = false.');  
+
+            %Find sign needed to compute the inner factor
+            PMonesY = sign(obj.Y - 0.1);	% +/- 1 for Y(m,t)'s
+
+            if~(obj.maxSumVal)
+                % Find the fixed-point of phat
+                opt.phat0 = Axhat;
+                opt.alg = 1; % approximate newton's method
+                opt.maxIter = 40; 
+                opt.tol = 1e-4; 
+                opt.stepsize = 0.2; 
+                %Smallest regularization setting without getting the warnings for Var= 0
+                opt.regularization = 1e-6; 
+                opt.debug = false;
+                phatfix = estimInvert(obj,Axhat,pvar,opt);     
+                
+                C = PMonesY .* ((phatfix - obj.Mean) ./ sqrt(pvar + obj.Var));
+                % Compute log int_z p_{Y|Z}(y|z) N(z;phatfix, pvar)
+                % Has a closed form solution: see C. E. Rasmussen, 
+                % "Gaussian Processes for Machine Learning." sec 3.9.
+                ls = log(normcdf(C, 0 , 1));
+                %Find bad values that cause log cdf to go to infinity
+                I = find(C < -30);
+                %This expression is equivalent to log(normpdf(C)) for
+                %all negative arguments greater than -38 and is
+                %numerically robust for all values smaller.  DO NOT USE
+                %FOR LARGE positive x.
+                ls(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+                
+                % Combine to form output cost
+                ll = ls + 0.5*(Axhat - phatfix).^2./pvar;
+            else
+                %Compute true constant
+                C = PMonesY .* (Axhat - obj.Mean)/sqrt(obj.Var);
+                ll = log(normcdf(C, 0, 1));
+                %Find bad values that cause log cdf to go to infinity
+                I = find(C < -30);
+                %This expression is equivalent to log(normpdf(C)) for
+                %all negative arguments greater than -38 and is
+                %numerically robust for all values smaller.  DO NOT USE
+                %FOR LARGE positive x.
+                ll(I) = -log(2)-0.5*C(I).^2+log(erfcx(-C(I)/sqrt(2)));
+            end
+            
+        end
+        
+        
+        % *****************************************************************
+        %                       NUMCOLUMNS METHOD
+        % *****************************************************************
+        function S = numColumns(obj)
+            % Return number of columns of Y
+            S = size(obj.Y, 2);
+        end
+        
+        %Generate random samples given the distribution
+        function y = genRand(obj, z)
+            if obj.Var > 0
+                actProb = normcdf(z,obj.Mean, sqrt(obj.Var));
+                y = (rand(size(z)) < actProb);
+            elseif obj.Var == 0
+                y = sign(z-obj.Mean);
+                y(y == -1) = 0;
+            else
+                error('Var must be non-negative')
+            end
+        end
+    end
+    
+    methods (Access = private)
+        % *****************************************************************
+        %                         FSOLVE METHOD
+        % *****************************************************************
+        % This method is used by MATLAB's fsolve function in the max-sum
+        % case to locate the value of z that sets the prox-operator
+        % derivative to zero
+        function [Fval, Jacobian] = zero_deriv(obj, z, phat, pvar)
+            % Compute value of derivative at z
+            PMonesY = sign(obj.Y - 0.1);	% +/- 1 for Y(m,t)'s
+            C = PMonesY .* (z - obj.Mean) ./ sqrt(obj.Var);
+            % Now compute the ratio normpdf(C)/normcdf(C)
+            ratio = (2/sqrt(2*pi)) * (erfcx(-C / sqrt(2)).^(-1));
+            % Value of derivative
+            Fval = PMonesY.*ratio./sqrt(obj.Var) - (z - phat)./pvar;
+            
+            % Optionally compute Jacobian of F at z
+            if nargout >= 2
+                M = numel(phat);
+                Jvec = -(1./obj.Var) .* ratio .* (C + ratio) - (1 ./ pvar);
+%                 Jacobian = diag(Jvec);      % Okay for small problems
+                Jacobian = sparse(1:M, 1:M, Jvec);
+            end
+        end
+    end
+end
+##### SOURCE END #####
+--></body></html>
