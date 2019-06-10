@@ -277,7 +277,7 @@ classdef QuantizeEstimOut < EstimOut
         % inequality, i.e., computing log E_z[p(y|z)] instead.  If
         % performing max-sum GAMP (obj.maxSumVal = true), logLike returns
         % log p(y|z) evaluated at z = Zhat
-        function ll = logLike(obj, Zhat, Zvar)
+        function ll = logLike(obj, Phat, Pvar)
             
             switch obj.maxSumVal
                 case false
@@ -289,8 +289,8 @@ classdef QuantizeEstimOut < EstimOut
                     t_upper( obj.Y == 2^(obj.Quantize_bit)-1 ) = +inf;
                     
                     inv_sqrt_Pvar_plus_Var = 1./sqrt(Pvar + obj.Var);
-                        z_lower = ( Phat - obj.Mean - t_lower ) .* inv_sqrt_Pvar_plus_Var;
-                        z_upper = ( Phat - obj.Mean - t_upper ) .* inv_sqrt_Pvar_plus_Var;
+                    C_lower = ( Phat - obj.Mean - t_lower ) .* inv_sqrt_Pvar_plus_Var;
+                    C_upper = ( Phat - obj.Mean - t_upper ) .* inv_sqrt_Pvar_plus_Var;
                     
 %                     C_lower = (( Zhat - obj.Mean - t_lower ) ./sqrt(Zvar + obj.Var));
 %                     C_upper = (( Zhat - obj.Mean - t_upper ) ./sqrt(Zvar + obj.Var));
