@@ -11,39 +11,36 @@ The code evaluates broadband millimeter-wave MIMO channel-estimation methods und
 - MATLAB with support for matrix and signal-processing functions used by the scripts
 - The repository root and its subdirectories available on the MATLAB path
 
-The main experiment uses `dftmtx`, so a MATLAB installation with the toolbox that provides this function may be required.
-
 ## Quick Start
 
 1. Clone or download this repository.
 2. Open MATLAB and change the current folder to the repository root.
 3. Add the repository folders to the MATLAB path:
 
-	```matlab
-	addpath(genpath(pwd))
-	```
-
+   ```matlab
+   addpath(genpath(pwd))
+   ```
 4. Run the main comparison script:
 
-	```matlab
-	cd Broadband_Fewbit_Main
-	Broadband_Few_Bit_Comparison
-	```
+   ```matlab
+   cd Broadband_Fewbit_Main
+   Broadband_Few_Bit_Comparison
+   ```
 
 The default configuration uses the included `H_UPA_16_4_16_2clusters.mat` channel file, one-bit ADC quantization, a shifted Zadoff-Chu training sequence, and fixed random seed `42`. Simulation parameters can be changed near the top of `Broadband_Few_Bit_Comparison.m`.
 
 ## Repository Structure
 
-| Directory | Description |
-| --- | --- |
-| `Broadband_Fewbit_Main/` | Main broadband few-bit channel-estimation experiments and channel data |
-| `main/` | GAMP estimators, linear transforms, and input/output estimation modules |
-| `Phil_Pilot/` | Pilot-generation and training utilities |
-| `Gold Sequences/` | Gold-sequence generation and correlation utilities |
-| `Narrowband_Fewbit/` | Narrowband few-bit experiments |
-| `Antenna_Radiation/` | Antenna and array-radiation examples |
-| `Test_of_*/` | Additional tests and experimental scripts |
-| `WLAN/` | WLAN-related utilities and experiments |
+| Directory                  | Description                                                             |
+| -------------------------- | ----------------------------------------------------------------------- |
+| `Broadband_Fewbit_Main/` | Main broadband few-bit channel-estimation experiments and channel data  |
+| `main/`                  | GAMP estimators, linear transforms, and input/output estimation modules |
+| `Phil_Pilot/`            | Pilot-generation and training utilities                                 |
+| `Gold Sequences/`        | Gold-sequence generation and correlation utilities                      |
+| `Narrowband_Fewbit/`     | Narrowband few-bit experiments                                          |
+| `Antenna_Radiation/`     | Antenna and array-radiation examples                                    |
+| `Test_of_*/`             | Additional tests and experimental scripts                               |
+| `WLAN/`                  | WLAN-related utilities and experiments                                  |
 
 ## Reproducibility
 
