@@ -51,10 +51,30 @@ The main script initializes MATLAB's random-number generator with `rng(42)`. To 
 
 ## Citation
 
-If you use this code in academic work, please cite the associated paper:
+If you use this code in academic work, please cite the associated paper. The complete publication information is:
 
-```text
-Channel Estimation in Broadband Millimeter-Wave MIMO Systems with Few-Bit ADCs
+> J. Mo, P. Schniter, and R. W. Heath, "Channel Estimation in Broadband Millimeter Wave MIMO Systems With Few-Bit ADCs," *IEEE Transactions on Signal Processing*, vol. 66, no. 5, pp. 1141-1154, Mar. 2018, doi: [10.1109/TSP.2017.2781644](https://doi.org/10.1109/TSP.2017.2781644).
+
+**Authors:** Jianhua Mo, Philip Schniter, and Robert W. Heath
+
+**Journal:** IEEE Transactions on Signal Processing
+
+**Publication details:** Volume 66, Issue 5, pages 1141-1154, published March 1, 2018
+
+**DOI:** [10.1109/TSP.2017.2781644](https://doi.org/10.1109/TSP.2017.2781644)
+
+### BibTeX
+
+```bibtex
+@article{Mo2018BroadbandFewBit,
+	author  = {Mo, Jianhua and Schniter, Philip and Heath, Robert W.},
+	title   = {Channel Estimation in Broadband Millimeter Wave MIMO Systems With Few-Bit ADCs},
+	journal = {IEEE Transactions on Signal Processing},
+	volume  = {66},
+	number  = {5},
+	pages   = {1141--1154},
+	year    = {2018},
+	month   = mar,
+	doi     = {10.1109/TSP.2017.2781644}
+}
 ```
-
-Please consult the paper for the complete bibliographic information.
